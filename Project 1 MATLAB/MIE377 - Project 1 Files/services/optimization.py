@@ -47,3 +47,24 @@ def MVO(mu, Q):
 
     prob.solve(verbose=False, solver=cp.ECOS)
     return x.value
+
+def market_cap(r_mkt, R):
+    '''
+    Return estimated market portfolio weights
+    '''
+    T, n = R.shape
+    x = cp.Variable(n)
+
+    Aeq = np.ones([1, n])
+    beq = 1
+    lb = np.zeros(n)
+
+    error = cp.norm(r_mkt - (R @ x), p=2)
+    objective = cp.Minimize(error)
+    constraints = [x >= lb, 
+                   Aeq @ x == beq]
+    
+    prob = cp.Problem(objective, constraints)
+    prob.solve()
+
+    return x.value

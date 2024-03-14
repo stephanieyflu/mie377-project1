@@ -67,3 +67,20 @@ class OLS_MVO:
         mu, Q = OLS(returns, factRet)
         x = MVO(mu, Q)
         return x
+
+class MARKET_CAP:
+    """_summary_
+    """
+
+    def __init__(self, NumObs=36):
+        self.NumObs = NumObs  # number of observations to use
+    
+    def execute_strategy(self, periodReturns, factorReturns):
+        T, n = periodReturns.shape
+        # get the last T observations
+        returns = periodReturns.iloc[(-1) * self.NumObs:, :]
+        factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
+
+        x = market_cap(factRet['Mkt_RF'].values, returns.values)
+
+        return x
