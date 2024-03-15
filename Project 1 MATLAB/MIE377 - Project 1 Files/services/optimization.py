@@ -2,7 +2,7 @@ import cvxpy as cp
 import numpy as np
 from scipy.stats import chi2
 
-def MVO(mu, Q, robust=False, T=None, a=None, l=None):
+def MVO(mu, Q, robust=False, T=None, alpha=None, llambda=None):
     """
     #----------------------------------------------------------------------
     Use this function to construct an example of a MVO portfolio.
@@ -17,6 +17,20 @@ def MVO(mu, Q, robust=False, T=None, a=None, l=None):
 
     # *************** WRITE YOUR CODE HERE ***************
     #----------------------------------------------------------------------
+    
+    Returns portfolio weights based on MVO.
+
+    Inputs:
+        mu (np.ndarray): n x 1 vector of expected asset returns
+        Q (np.ndarray): n x n matrix of asset covariances
+        robust (bool): flag for selecting robust MVO
+        T (int): number of observations
+        alpha (float): alpha value for ellipsoidal robust MVO
+        llambda (float): lambda value for ellipsoidal robust MVO
+    
+    Returns:
+        x (np.ndarray): n x 1 vector of estimated asset weights for the market portfolio
+
     """
 
     # Find the total number of assets
@@ -32,7 +46,7 @@ def MVO(mu, Q, robust=False, T=None, a=None, l=None):
     A = -1 * mu.T
     b = -1 * targetRet
 
-    # constrain weights to sum to 1
+    # Constrain weights to sum to 1
     Aeq = np.ones([1, n])
     beq = 1
 
@@ -46,13 +60,14 @@ def MVO(mu, Q, robust=False, T=None, a=None, l=None):
                         x >= lb])
         
     if robust:
+        # Calculate theta and epsilon for ellipsoidal robust MVO
         theta = np.sqrt((1/T) * np.multiply(np.diag(Q), np.eye(n)))
-        e = np.sqrt(chi2.ppf(a, n))
+        epsilon = np.sqrt(chi2.ppf(alpha, n))
         
-        prob = cp.Problem(cp.Minimize(((1 / 2) * cp.quad_form(x, Q)) + (l * A @ x) + (e * cp.norm(theta @ x, p=2))),
+        prob = cp.Problem(cp.Minimize(((1 / 2) * cp.quad_form(x, Q)) + (llambda * A @ x) + (epsilon * cp.norm(theta @ x, p=2))),
                         [Aeq @ x == beq,
                         x >= lb])
-    # change verbose to True to output optimization
+    # Change verbose to True to output optimization
     # info to console
 
     prob.solve(verbose=False, solver=cp.ECOS)
@@ -60,17 +75,32 @@ def MVO(mu, Q, robust=False, T=None, a=None, l=None):
 
 def market_cap(r_mkt, R):
     '''
-    Return estimated market portfolio weights
+    Returns estimated market portfolio weights.
+
+    Inputs:
+        r_mkt (np.ndarray): T x 1 vector of market returns
+        R (np.ndarray): T x n matrix of asset returns
+    
+    Returns:
+        x (np.ndarray): n x 1 vector of estimated asset weights for the market portfolio
     '''
     T, n = R.shape
+
+    # Define and solve using CVXPY
     x = cp.Variable(n)
 
+    # Constrain weights to sum to 1
     Aeq = np.ones([1, n])
     beq = 1
+
+    # Disallow short sales
     lb = np.zeros(n)
 
+    # Define objective function
     error = cp.norm(r_mkt - (R @ x), p=2)
     objective = cp.Minimize(error)
+
+    # Define constraints
     constraints = [Aeq @ x == beq,
                    x >= lb]
     

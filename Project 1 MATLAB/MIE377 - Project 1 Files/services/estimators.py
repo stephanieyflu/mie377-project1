@@ -43,23 +43,41 @@ def OLS(returns, factRet):
     return mu, Q
 
 def PCA(returns, p=3):
+    '''
+    Returns mu and Q estimates based on PCA.
+
+    Inputs:
+        returns (pd.DataFrame): T x n matrix of asset returns
+        p (int): number of PCs to extract
+
+    Returns:
+        mu (np.ndarray): n x 1 vector of expected asset returns
+        Q (np.ndarray): n x n matrix of asset covariances
+    '''
     [T, n] = returns.shape
+
+    ### PCA ###
 
     I = np.ones([T, 1])
     r_bar = (1/T) * ((returns.values).T @ I)
 
+    # Centre the returns
     R_bar = returns.values - I @ (r_bar.T)
 
+    # Estimate the biased covariance matrix
     Q_biased = (1/T) * (R_bar.T @ R_bar)
 
-    # perform eigenvalue decomposition
+    # Perform eigenvalue decomposition
     w, v = np.linalg.eig(Q_biased) # w = eigenvalues, v = eigenvectors
 
+    # Construct matrix of PCs
     P = R_bar @ v
 
-    # choose top p PCs
+    # Choose top p PCs
     P1 = P[:, :p]
     factRet = pd.DataFrame(P1)
+
+    ### OLS ###
 
     # Number of observations and factors
     [T, p] = factRet.shape
