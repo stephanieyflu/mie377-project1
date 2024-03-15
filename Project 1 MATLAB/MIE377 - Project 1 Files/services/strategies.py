@@ -68,6 +68,30 @@ class OLS_MVO:
         x = MVO(mu, Q)
         return x
 
+class OLS_MVO_robust:
+    """
+    uses historical returns to estimate the covariance matrix and expected return
+    """
+
+    def __init__(self, NumObs=36):
+        self.NumObs = NumObs  # number of observations to use
+
+    def execute_strategy(self, periodReturns, factorReturns, a=0.95, l=10):
+        """
+        executes the portfolio allocation strategy based on the parameters in the __init__
+
+        :param factorReturns:
+        :param periodReturns:
+        :return:x
+        """
+        T, n = periodReturns.shape
+        # get the last T observations
+        returns = periodReturns.iloc[(-1) * self.NumObs:, :]
+        factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
+        mu, Q = OLS(returns, factRet)
+        x = MVO(mu, Q, robust=True, T=T, a=a, l=l)
+        return x
+
 class MARKET_CAP:
     """_summary_
     """

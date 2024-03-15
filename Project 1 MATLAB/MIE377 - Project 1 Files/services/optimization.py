@@ -1,8 +1,8 @@
 import cvxpy as cp
 import numpy as np
+from scipy.stats import chi2
 
-
-def MVO(mu, Q):
+def MVO(mu, Q, robust=False, T=None, a=None, l=None):
     """
     #----------------------------------------------------------------------
     Use this function to construct an example of a MVO portfolio.
@@ -36,12 +36,25 @@ def MVO(mu, Q):
     Aeq = np.ones([1, n])
     beq = 1
 
+    # define theta
+    theta = np.sqrt((1/T) * np.multiply(np.diag(Q), np.eye(n)))
+
+    # define epsilon
+    e = np.sqrt(chi2.ppf(a, n))
+
     # Define and solve using CVXPY
     x = cp.Variable(n)
-    prob = cp.Problem(cp.Minimize((1 / 2) * cp.quad_form(x, Q)),
-                      [A @ x <= b,
-                       Aeq @ x == beq,
-                       x >= lb])
+
+    if not robust:
+        prob = cp.Problem(cp.Minimize((1 / 2) * cp.quad_form(x, Q)),
+                        [A @ x <= b,
+                        Aeq @ x == beq,
+                        x >= lb])
+        
+    if robust:
+        prob = cp.Problem(cp.Minimize(((1 / 2) * cp.quad_form(x, Q)) + (l * A @ x) + (e * cp.norm(theta @ x, p=2))),
+                        [Aeq @ x == beq,
+                        x >= lb])
     # change verbose to True to output optimization
     # info to console
 
@@ -61,10 +74,10 @@ def market_cap(r_mkt, R):
 
     error = cp.norm(r_mkt - (R @ x), p=2)
     objective = cp.Minimize(error)
-    constraints = [x >= lb, 
-                   Aeq @ x == beq]
+    constraints = [Aeq @ x == beq,
+                   x >= lb]
     
     prob = cp.Problem(objective, constraints)
-    prob.solve()
+    prob.solve(verbose=False, solver=cp.ECOS)
 
     return x.value
