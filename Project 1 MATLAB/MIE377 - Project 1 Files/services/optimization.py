@@ -36,12 +36,6 @@ def MVO(mu, Q, robust=False, T=None, a=None, l=None):
     Aeq = np.ones([1, n])
     beq = 1
 
-    # define theta
-    theta = np.sqrt((1/T) * np.multiply(np.diag(Q), np.eye(n)))
-
-    # define epsilon
-    e = np.sqrt(chi2.ppf(a, n))
-
     # Define and solve using CVXPY
     x = cp.Variable(n)
 
@@ -52,6 +46,9 @@ def MVO(mu, Q, robust=False, T=None, a=None, l=None):
                         x >= lb])
         
     if robust:
+        theta = np.sqrt((1/T) * np.multiply(np.diag(Q), np.eye(n)))
+        e = np.sqrt(chi2.ppf(a, n))
+        
         prob = cp.Problem(cp.Minimize(((1 / 2) * cp.quad_form(x, Q)) + (l * A @ x) + (e * cp.norm(theta @ x, p=2))),
                         [Aeq @ x == beq,
                         x >= lb])

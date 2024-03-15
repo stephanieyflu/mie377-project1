@@ -8,9 +8,8 @@ def project_function(periodReturns, periodFactRet, x0):
     :param periodFactRet:
     :return: the allocation as a vector
     """
-    # print('new')
-    Strategy = OLS_MVO_robust()
-    x = Strategy.execute_strategy(periodReturns, periodFactRet)
+    Strategy = PCA_MVO()
+    x = Strategy.execute_strategy(periodReturns, periodFactRet, p=7)
     return x
 
 # def project_function(periodReturns, periodFactRet, x0):

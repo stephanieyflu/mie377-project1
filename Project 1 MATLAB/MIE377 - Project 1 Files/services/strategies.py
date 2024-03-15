@@ -1,7 +1,7 @@
 import numpy as np
 from services.estimators import *
 from services.optimization import *
-
+import pandas as pd
 
 # this file will produce portfolios as outputs from data - the strategies can be implemented as classes or functions
 # if the strategies have parameters then it probably makes sense to define them as a class
@@ -76,6 +76,10 @@ class OLS_MVO_robust:
     def __init__(self, NumObs=36):
         self.NumObs = NumObs  # number of observations to use
 
+    def find_lambda():
+        
+        return
+
     def execute_strategy(self, periodReturns, factorReturns, a=0.95, l=10):
         """
         executes the portfolio allocation strategy based on the parameters in the __init__
@@ -90,6 +94,29 @@ class OLS_MVO_robust:
         factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
         mu, Q = OLS(returns, factRet)
         x = MVO(mu, Q, robust=True, T=T, a=a, l=l)
+        return x
+
+class PCA_MVO:
+    """
+    uses historical returns to estimate the covariance matrix and expected return
+    """
+
+    def __init__(self, NumObs=36):
+        self.NumObs = NumObs  # number of observations to use
+
+    def execute_strategy(self, periodReturns, factorReturns, p=3):
+        """
+        executes the portfolio allocation strategy based on the parameters in the __init__
+
+        :param factorReturns:
+        :param periodReturns:
+        :return:x
+        """
+        T, n = periodReturns.shape
+        # get the last T observations
+        returns = periodReturns.iloc[(-1) * self.NumObs:, :]
+        mu, Q = PCA(returns, p=p)
+        x = MVO(mu, Q)
         return x
 
 class MARKET_CAP:

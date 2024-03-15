@@ -1,0 +1,3 @@
+Elasped time is 0.3737626075744629 seconds
+Sharpe ratio:  0.19910982450402284
+Avg. turnover:  0.5404744936839014
