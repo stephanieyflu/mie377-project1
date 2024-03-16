@@ -110,4 +110,3 @@ def calculate_turnover_rate(x, x0):
     '''
     turnover_rate = np.mean(np.abs(x - x0)) 
     return turnover_rate
-

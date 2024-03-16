@@ -7,6 +7,8 @@ import pandas as pd
 # if the strategies have parameters then it probably makes sense to define them as a class
 
 
+
+
 def equal_weight(periodReturns):
     """
     computes the equal weight vector as the portfolio
@@ -67,7 +69,103 @@ class OLS_MVO:
         mu, Q = OLS(returns, factRet)
         x = MVO(mu, Q)
         return x
+class OLS_CAPM:
+    """
+    uses historical returns to estimate the covariance matrix and expected return
+    """
 
+    def __init__(self, NumObs=36):
+        self.NumObs = NumObs  # number of observations to use
+
+    def execute_strategy(self, periodReturns, factorReturns):
+        """
+        executes the portfolio allocation strategy based on the parameters in the __init__
+
+        :param factorReturns:
+        :param periodReturns:
+        :return:x
+        """
+        T, n = periodReturns.shape
+        # get the last T observations
+        returns = periodReturns.iloc[(-1) * self.NumObs:, :]
+        factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
+        mu, Q = OLS(returns, factRet[["Mkt_RF"]])
+        x = MVO(mu, Q)
+        return x
+    
+class OLS_FF:
+    """
+    uses historical returns to estimate the covariance matrix and expected return
+    """
+
+    def __init__(self, NumObs=36):
+        self.NumObs = NumObs  # number of observations to use
+
+    def execute_strategy(self, periodReturns, factorReturns):
+        """
+        executes the portfolio allocation strategy based on the parameters in the __init__
+
+        :param factorReturns:
+        :param periodReturns:
+        :return:x
+        """
+        T, n = periodReturns.shape
+        # get the last T observations
+        returns = periodReturns.iloc[(-1) * self.NumObs:, :]
+        factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
+        mu, Q = OLS(returns, factRet[["Mkt_RF", "SMB", "HML"]])
+        x = MVO(mu, Q)
+        return x
+    
+class Lasso_MVO:
+    """
+    uses historical returns to estimate the covariance matrix and expected return
+    """
+
+    def __init__(self, NumObs=36):
+        self.NumObs = NumObs  # number of observations to use
+
+    def execute_strategy(self, periodReturns, factorReturns, S = 0.001): #change S
+        """
+        executes the portfolio allocation strategy based on the parameters in the __init__
+
+        :param factorReturns:
+        :param periodReturns:
+        :return:x
+        """
+        T, n = periodReturns.shape
+        # get the last T observations
+        returns = periodReturns.iloc[(-1) * self.NumObs:, :]
+        factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
+        mu, Q = Lasso(returns, factRet, S)
+        x = MVO(mu, Q)
+        return x
+
+    
+class MVO_CC:
+    """
+    uses historical returns to estimate the covariance matrix and expected return
+    """
+
+    def __init__(self, NumObs=36):
+        self.NumObs = NumObs  # number of observations to use
+
+    def execute_strategy(self, periodReturns, factorReturns, L=0.03, U=1, K=10):
+        """
+        executes the portfolio allocation strategy based on the parameters in the __init__
+
+        :param factorReturns:
+        :param periodReturns:
+        :return:x
+        """
+        T, n = periodReturns.shape
+        # get the last T observations
+        returns = periodReturns.iloc[(-1) * self.NumObs:, :]
+        factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
+        mu, Q = OLS(returns, factRet)
+        x = MVO_card(mu, Q, L, U, K)
+        return x
+      
 class OLS_MVO_robust:
     """
     uses all 8 factors to estimate the covariance matrix and expected return
@@ -147,3 +245,51 @@ class MARKET_CAP:
         x = market_cap(factRet['Mkt_RF'].values, returns.values)
 
         return x
+
+class Max_Sharpe_Ratio:
+    def __init__(self, NumObs = 36):
+        self.NumObs = NumObs #number of observations to use
+    
+    def execute_strategy(self, periodReturns, factorReturns):
+       T, n = periodReturns.shape
+       returns = periodReturns.iloc[(-1) * self.NumObs:, :]
+       factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
+       mu, Q = OLS(returns, factRet)
+       x = Sharpe_MVO(mu, Q)
+       return x
+    
+class Max_Sharpe_Robust_Ratio: #NOT USING
+    def __init__(self, NumObs = 36):
+        self.NumObs = NumObs #number of observations to use
+    
+    def execute_strategy(self, periodReturns, factorReturns):
+       T, n = periodReturns.shape
+       returns = periodReturns.iloc[(-1) * self.NumObs:, :]
+       factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
+       mu, Q = OLS(returns, factRet)
+       x = Robust_Sharpe_Eps_MVO(mu, Q)
+       return x
+    
+class Strat_Max_Sharpe_Min_Turn_1:
+    def __init__(self, NumObs = 36):
+        self.NumObs = NumObs #number of observations to use
+    
+    def execute_strategy(self, periodReturns, factorReturns, x0, llambda=2):
+       T, n = periodReturns.shape
+       returns = periodReturns.iloc[(-1) * self.NumObs:, :]
+       factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
+       mu, Q = OLS(returns, factRet)
+       x = Max_Sharpe_Min_Turn_1(mu, Q, x0, llambda)
+       return x
+
+class Strat_Max_Sharpe_Min_Turn_2:
+    def __init__(self, NumObs = 36):
+        self.NumObs = NumObs #number of observations to use
+    
+    def execute_strategy(self, periodReturns, factorReturns, x0, llambda = 0.5):
+       T, n = periodReturns.shape
+       returns = periodReturns.iloc[(-1) * self.NumObs:, :]
+       factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
+       mu, Q = OLS(returns, factRet)
+       x = Max_Sharpe_Min_Turn_2(mu, Q, x0, llambda)
+       return x
