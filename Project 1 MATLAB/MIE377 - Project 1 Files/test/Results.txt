@@ -1,0 +1,4 @@
+Strategy: Max_Sharpe_Min_Turn_1 -> (maximizing sharpe while minimizing turn, set to higher llambda to favour low turnover)
+Elasped time is 1.1763348579406738 seconds
+Sharpe ratio:  0.21505119481443877
+Avg. turnover:  3.2704613701196063e-10

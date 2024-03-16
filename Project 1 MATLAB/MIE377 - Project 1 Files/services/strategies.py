@@ -7,6 +7,8 @@ from services.optimization import *
 # if the strategies have parameters then it probably makes sense to define them as a class
 
 
+
+
 def equal_weight(periodReturns):
     """
     computes the equal weight vector as the portfolio
@@ -164,3 +166,51 @@ class MVO_CC:
         mu, Q = OLS(returns, factRet)
         x = MVO_card(mu, Q, L, U, K)
         return x
+
+class Max_Sharpe_Ratio:
+    def __init__(self, NumObs = 36):
+        self.NumObs = NumObs #number of observations to use
+    
+    def execute_strategy(self, periodReturns, factorReturns):
+       T, n = periodReturns.shape
+       returns = periodReturns.iloc[(-1) * self.NumObs:, :]
+       factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
+       mu, Q = OLS(returns, factRet)
+       x = Sharpe_MVO(mu, Q)
+       return x
+    
+class Max_Sharpe_Robust_Ratio: #NOT USING
+    def __init__(self, NumObs = 36):
+        self.NumObs = NumObs #number of observations to use
+    
+    def execute_strategy(self, periodReturns, factorReturns):
+       T, n = periodReturns.shape
+       returns = periodReturns.iloc[(-1) * self.NumObs:, :]
+       factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
+       mu, Q = OLS(returns, factRet)
+       x = Robust_Sharpe_Eps_MVO(mu, Q)
+       return x
+    
+class Strat_Max_Sharpe_Min_Turn_1:
+    def __init__(self, NumObs = 36):
+        self.NumObs = NumObs #number of observations to use
+    
+    def execute_strategy(self, periodReturns, factorReturns, x0, llambda=2):
+       T, n = periodReturns.shape
+       returns = periodReturns.iloc[(-1) * self.NumObs:, :]
+       factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
+       mu, Q = OLS(returns, factRet)
+       x = Max_Sharpe_Min_Turn_1(mu, Q, x0, llambda)
+       return x
+
+class Strat_Max_Sharpe_Min_Turn_2:
+    def __init__(self, NumObs = 36):
+        self.NumObs = NumObs #number of observations to use
+    
+    def execute_strategy(self, periodReturns, factorReturns, x0, llambda = 0.5):
+       T, n = periodReturns.shape
+       returns = periodReturns.iloc[(-1) * self.NumObs:, :]
+       factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
+       mu, Q = OLS(returns, factRet)
+       x = Max_Sharpe_Min_Turn_2(mu, Q, x0, llambda)
+       return x
