@@ -42,6 +42,7 @@ def OLS(returns, factRet):
 
     return mu, Q
 
+
 def Lasso(returns, factRet, S=0.001):
 
     #S = sum of regression coefficients
@@ -98,6 +99,7 @@ def Lasso(returns, factRet, S=0.001):
 
     return mu, Q
   
+
 def PCA(returns, p=3):
     '''
     Returns mu and Q estimates based on PCA.

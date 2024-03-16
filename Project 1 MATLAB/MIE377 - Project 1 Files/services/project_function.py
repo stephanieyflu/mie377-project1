@@ -32,6 +32,8 @@ def project_function(periodReturns, periodFactRet, x0):
     Strategy5 = MARKET_CAP()
     x_market_cap = Strategy5.execute_strategy(periodReturns, periodFactRet)
 
+    no_strat = 6
+
     # Create DataFrame of all strategies
     strategies = pd.DataFrame([x_equal, 
                                x_hist_mvo, 
@@ -44,6 +46,36 @@ def project_function(periodReturns, periodFactRet, x0):
                                       'OLS MVO', 'OLS MVO Robust', 
                                       'PCA MVO', 'Market Cap Weights'])
 
+    # Calculate performance metrics
+    performance_metrics = strategies.iloc[-no_strat:, :].apply(lambda x: calculate_performance_metrics(x, periodReturns, periodFactRet, x0), axis=1)
+
+    # Add column to .csv file with Sharpe ratio and turnover
+
+    # Select the strategy that has the best Sharpe ratio and average turnover
+
+    # Scores for Sharpe
+    scores = []
+    for group_idx, group_sharpe_ratios in strategies.groupby(strategies.index)['Sharpe Ratio']:
+        rank = group_sharpe_ratios.rank(method='dense', ascending=True) # higher score is better
+        score_mapping = {r: (no_strat+1) - r for r in rank}
+        scores.extend(rank.map(score_mapping))
+
+    df_sharpe = pd.DataFrame({'Sharpe Scores': scores}, index=strategies.index)
+    df_with_sharpe = pd.concat([strategies, df_sharpe], axis=1)
+
+    # Scores for turnover
+    scores = []
+    for group_idx, group_turnover in strategies.groupby(strategies.index)['Turnover']:
+        rank = group_turnover.rank(method='dense', ascending=False) # lower score is better
+        score_mapping = {r: (no_strat+1) - r for r in rank}
+        scores.extend(rank.map(score_mapping))
+
+    df_turnover = pd.DataFrame({'Turnover Scores': scores}, index=strategies.index)
+    df_with_sharpe_turnover = pd.concat([df_with_sharpe, df_turnover], axis=1)
+
+    # Add overall score
+    df_score = None
+    
     # Check if the file exists
     if not os.path.exists('portfolios.csv'):
         # If the file does not exist, create it from the DataFrame
@@ -52,38 +84,8 @@ def project_function(periodReturns, periodFactRet, x0):
     else:
         # If the file exists, append the DataFrame to it
         strategies.to_csv('portfolios.csv', mode='a', header=False)
-        print(f"Data appended to '{'portfolios.csv'}'.")
+        print(f"Data appended to '{'portfolios.csv'}'.")    
 
-    df = pd.read_csv('portfolios.csv')
-
-    # Calculate performance metrics
-    performance_metrics = df.iloc[-6:, :].apply(lambda x: calculate_performance_metrics(x, periodReturns, periodFactRet, x0), axis=1)
-
-    # Add column to .csv file with Sharpe ratio and turnover
-
-    # Select the strategy that has the best Sharpe ratio and average turnover
-    df_final = pd.read_csv('portfolios.csv')
-
-    # Scores for Sharpe
-    scores = []
-    for group_idx, group_sharpe_ratios in df_final.groupby(df_final.index)['Sharpe Ratio']:
-        rank = group_sharpe_ratios.rank(method='dense', ascending=True) # higher score is better
-        score_mapping = {r: 7 - r for r in rank}
-        scores.extend(rank.map(score_mapping))
-
-    df_scores = pd.DataFrame({'Sharpe Scores': scores}, index=df.index)
-    df_with_scores = pd.concat([df, df_scores], axis=1)
-
-    # Scores for turnover
-    scores = []
-    for group_idx, group_turnover in df_final.groupby(df_final.index)['Turnover']:
-        rank = group_sharpe_ratios.rank(method='dense', ascending=False) # lower score is better
-        score_mapping = {r: 7 - r for r in rank}
-        scores.extend(rank.map(score_mapping))
-
-    df_scores = pd.DataFrame({'Turnover Scores': scores}, index=df.index)
-    df_with_scores = pd.concat([df, df_scores], axis=1)
-    
     return x_equal
 
 def calculate_performance_metrics(strategy_weights, periodReturns, periodFactRet, x0):

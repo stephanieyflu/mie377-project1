@@ -72,7 +72,8 @@ def MVO(mu, Q, robust=False, T=None, alpha=None, llambda=None):
 
     prob.solve(verbose=False, solver=cp.ECOS)
     return x.value
-  
+
+
 def MVO_card(mu, Q, L=0.03, U=1, K=10):
 
     #Lower bound for buy-in threshold
@@ -112,6 +113,7 @@ def MVO_card(mu, Q, L=0.03, U=1, K=10):
     prob.solve(solver=cp.GUROBI)
     return x.value
 
+
 def market_cap(r_mkt, R):
     '''
     Returns estimated market portfolio weights.
@@ -148,6 +150,7 @@ def market_cap(r_mkt, R):
 
     return x.value
 
+
 #edit so you can construct MVO 
 def Sharpe_MVO(mu, Q):
         # Find the total number of assets
@@ -172,6 +175,7 @@ def Sharpe_MVO(mu, Q):
     x = y.value/k.value
 
     return x
+
 
 def Robust_Sharpe_Eps_MVO(mu, Q, T): #NOT USING
            # Find the total number of assets
@@ -198,6 +202,7 @@ def Robust_Sharpe_Eps_MVO(mu, Q, T): #NOT USING
 
     return x
 
+
 def Max_Sharpe_Min_Turn_1(mu, Q, x0, llambda=2):
     #towards minimizing turnover
         # Find the total number of assets
@@ -223,6 +228,7 @@ def Max_Sharpe_Min_Turn_1(mu, Q, x0, llambda=2):
     x = y.value/k.value
 
     return x
+
 
 def Max_Sharpe_Min_Turn_2(mu, Q, x0, llambda = 0.5):
     #towards maximizing sharpe

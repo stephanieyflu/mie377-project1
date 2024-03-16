@@ -6,9 +6,6 @@ import pandas as pd
 # this file will produce portfolios as outputs from data - the strategies can be implemented as classes or functions
 # if the strategies have parameters then it probably makes sense to define them as a class
 
-
-
-
 def equal_weight(periodReturns):
     """
     computes the equal weight vector as the portfolio
@@ -69,6 +66,8 @@ class OLS_MVO:
         mu, Q = OLS(returns, factRet)
         x = MVO(mu, Q)
         return x
+
+
 class OLS_CAPM:
     """
     uses historical returns to estimate the covariance matrix and expected return
@@ -93,6 +92,7 @@ class OLS_CAPM:
         x = MVO(mu, Q)
         return x
     
+
 class OLS_FF:
     """
     uses historical returns to estimate the covariance matrix and expected return
@@ -117,6 +117,7 @@ class OLS_FF:
         x = MVO(mu, Q)
         return x
     
+
 class Lasso_MVO:
     """
     uses historical returns to estimate the covariance matrix and expected return
@@ -166,6 +167,7 @@ class MVO_CC:
         x = MVO_card(mu, Q, L, U, K)
         return x
       
+
 class OLS_MVO_robust:
     """
     uses all 8 factors to estimate the covariance matrix and expected return
@@ -197,6 +199,7 @@ class OLS_MVO_robust:
         x = MVO(mu, Q, robust=True, T=T, alpha=alpha, llambda=llambda)
         return x
 
+
 class PCA_MVO:
     """
     uses PCA to estimate the covariance matrix and expected return
@@ -222,6 +225,7 @@ class PCA_MVO:
         x = MVO(mu, Q)
         return x
 
+
 class MARKET_CAP:
     """
     uses an estimate of the market portfolio weights as the portfolio
@@ -246,6 +250,7 @@ class MARKET_CAP:
 
         return x
 
+
 class Max_Sharpe_Ratio:
     def __init__(self, NumObs = 36):
         self.NumObs = NumObs #number of observations to use
@@ -258,6 +263,7 @@ class Max_Sharpe_Ratio:
        x = Sharpe_MVO(mu, Q)
        return x
     
+
 class Max_Sharpe_Robust_Ratio: #NOT USING
     def __init__(self, NumObs = 36):
         self.NumObs = NumObs #number of observations to use
@@ -270,6 +276,7 @@ class Max_Sharpe_Robust_Ratio: #NOT USING
        x = Robust_Sharpe_Eps_MVO(mu, Q)
        return x
     
+
 class Strat_Max_Sharpe_Min_Turn_1:
     def __init__(self, NumObs = 36):
         self.NumObs = NumObs #number of observations to use
@@ -281,6 +288,7 @@ class Strat_Max_Sharpe_Min_Turn_1:
        mu, Q = OLS(returns, factRet)
        x = Max_Sharpe_Min_Turn_1(mu, Q, x0, llambda)
        return x
+
 
 class Strat_Max_Sharpe_Min_Turn_2:
     def __init__(self, NumObs = 36):
