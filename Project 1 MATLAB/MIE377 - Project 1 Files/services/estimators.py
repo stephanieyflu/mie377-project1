@@ -41,11 +41,11 @@ def OLS(returns, factRet):
 
     return mu, Q
 
-def Lasso(returns, factRet):
+def Lasso(returns, factRet, S=0.001):
 
-
-    lamb = 0.01
-    S = 0.0001
+    #S = sum of regression coefficients
+    #lamb = 0.01
+    #S = 0.0001
 
     # Number of observations and factors
     [T, p] = factRet.shape #T x p (36,8)

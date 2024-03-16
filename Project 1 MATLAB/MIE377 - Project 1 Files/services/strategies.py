@@ -124,7 +124,7 @@ class Lasso_MVO:
     def __init__(self, NumObs=36):
         self.NumObs = NumObs  # number of observations to use
 
-    def execute_strategy(self, periodReturns, factorReturns):
+    def execute_strategy(self, periodReturns, factorReturns, S = 0.001): #change S
         """
         executes the portfolio allocation strategy based on the parameters in the __init__
 
@@ -136,7 +136,7 @@ class Lasso_MVO:
         # get the last T observations
         returns = periodReturns.iloc[(-1) * self.NumObs:, :]
         factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
-        mu, Q = Lasso(returns, factRet)
+        mu, Q = Lasso(returns, factRet, S)
         x = MVO(mu, Q)
         return x
 
@@ -149,7 +149,7 @@ class MVO_CC:
     def __init__(self, NumObs=36):
         self.NumObs = NumObs  # number of observations to use
 
-    def execute_strategy(self, periodReturns, factorReturns):
+    def execute_strategy(self, periodReturns, factorReturns, L=0.03, U=1, K=10):
         """
         executes the portfolio allocation strategy based on the parameters in the __init__
 
@@ -162,5 +162,5 @@ class MVO_CC:
         returns = periodReturns.iloc[(-1) * self.NumObs:, :]
         factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
         mu, Q = OLS(returns, factRet)
-        x = MVO_card(mu, Q)
+        x = MVO_card(mu, Q, L, U, K)
         return x
