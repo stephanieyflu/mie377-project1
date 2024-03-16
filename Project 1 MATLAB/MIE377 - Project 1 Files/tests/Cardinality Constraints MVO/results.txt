@@ -1,0 +1,56 @@
+Buy-in Threshold:
+
+L = 0.01
+U = 1
+K = 10
+
+Elasped time is 0.9171309471130371 seconds
+Sharpe ratio:  0.18584036708867824
+Avg. turnover:  0.4842311734332133
+
+L = 0.03
+U = 1
+K = 10
+
+Elasped time is 0.9107439517974854 seconds
+Sharpe ratio:  0.1863729875868963
+Avg. turnover:  0.4845395971127029
+
+L = 0.05
+U = 1
+K = 10
+Elasped time is 0.8490509986877441 seconds
+Sharpe ratio:  0.19275449850346185
+Avg. turnover:  0.5068040623551566
+
+L = 0.03
+U = 0.5
+K = 10
+
+Elasped time is 0.803840160369873 seconds
+Sharpe ratio:  0.18637298758689627
+Avg. turnover:  0.4845395971127029
+
+L = 0.03
+U = 0.5
+K = 20
+
+Elasped time is 0.7537901401519775 seconds
+Sharpe ratio:  0.1876229945268905
+Avg. turnover:  0.49629376653635404
+
+L = 0.03
+U = 1
+K = 20
+
+Elasped time is 0.8896589279174805 seconds
+Sharpe ratio:  0.1876229945268906
+Avg. turnover:  0.49629376653635404
+
+L = 0.03
+U = 1
+K = 5
+
+Elasped time is 1.8154211044311523 seconds
+Sharpe ratio:  0.17529789673556737
+Avg. turnover:  0.6010673460908952
