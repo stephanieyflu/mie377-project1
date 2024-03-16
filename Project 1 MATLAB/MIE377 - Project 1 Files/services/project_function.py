@@ -2,7 +2,7 @@ from services.strategies import *
 import os
 import pandas as pd
 
-def project_function(periodReturns, periodFactRet, x0, p):
+def project_function(periodReturns, periodFactRet, x0, alpha, llambda):
     """
     Please feel free to modify this function as desired
     :param periodReturns:
@@ -10,12 +10,12 @@ def project_function(periodReturns, periodFactRet, x0, p):
     :return: the allocation as a vector
     """
     Strategy1 = OLS_MVO_robust() # Vary parameters
-    x1 = Strategy1.execute_strategy(periodReturns, periodFactRet, alpha=0.95, llambda=2)
+    x1 = Strategy1.execute_strategy(periodReturns, periodFactRet, alpha=alpha, llambda=llambda)
 
     Strategy2 = PCA_MVO() # Vary parameters
-    x2 = Strategy2.execute_strategy(periodReturns, periodFactRet, p=p)
+    x2 = Strategy2.execute_strategy(periodReturns, periodFactRet, p=4)
 
-    return x2
+    return x1
 
 # def project_function(periodReturns, periodFactRet, x0):
 #     """
