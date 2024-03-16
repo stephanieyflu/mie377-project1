@@ -10,6 +10,7 @@ def project_function(periodReturns, periodFactRet, x0):
     :param periodFactRet:
     :return: the allocation as a vector
     """
+    
     Strategy = Strat_Max_Sharpe_Min_Turn_1()
     #x = equal_weight(periodReturns)
     x = Strategy.execute_strategy(periodReturns, periodFactRet, x0)
