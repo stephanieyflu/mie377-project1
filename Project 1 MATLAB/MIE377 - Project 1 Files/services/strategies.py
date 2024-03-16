@@ -36,7 +36,6 @@ class HistoricalMeanVarianceOptimization:
         """
         factorReturns = None  # we are not using the factor returns
         returns = periodReturns.iloc[(-1) * self.NumObs:, :]
-        print(len(returns))
         mu = np.expand_dims(returns.mean(axis=0).values, axis=1)
         Q = returns.cov().values
         x = MVO(mu, Q)
