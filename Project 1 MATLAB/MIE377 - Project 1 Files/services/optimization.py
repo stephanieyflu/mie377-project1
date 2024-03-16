@@ -1,8 +1,8 @@
 import cvxpy as cp
 import numpy as np
+from scipy.stats import chi2
 
-
-def MVO(mu, Q):
+def MVO(mu, Q, robust=False, T=None, alpha=None, llambda=None):
     """
     #----------------------------------------------------------------------
     Use this function to construct an example of a MVO portfolio.
@@ -17,7 +17,67 @@ def MVO(mu, Q):
 
     # *************** WRITE YOUR CODE HERE ***************
     #----------------------------------------------------------------------
+    
+    Returns portfolio weights based on MVO.
+
+    Inputs:
+        mu (np.ndarray): n x 1 vector of expected asset returns
+        Q (np.ndarray): n x n matrix of asset covariances
+        robust (bool): flag for selecting robust MVO
+        T (int): number of observations
+        alpha (float): alpha value for ellipsoidal robust MVO
+        llambda (float): lambda value for ellipsoidal robust MVO
+    
+    Returns:
+        x (np.ndarray): n x 1 vector of estimated asset weights for the market portfolio
+
     """
+
+    # Find the total number of assets
+    n = len(mu)
+
+    # Set the target as the average expected return of all assets
+    targetRet = np.mean(mu)
+
+    # Disallow short sales
+    lb = np.zeros(n)
+
+    # Add the expected return constraint
+    A = -1 * mu.T
+    b = -1 * targetRet
+
+    # Constrain weights to sum to 1
+    Aeq = np.ones([1, n])
+    beq = 1
+
+    # Define and solve using CVXPY
+    x = cp.Variable(n)
+
+    if not robust:
+        prob = cp.Problem(cp.Minimize((1 / 2) * cp.quad_form(x, Q)),
+                        [A @ x <= b,
+                        Aeq @ x == beq,
+                        x >= lb])
+        
+    if robust:
+        # Calculate theta and epsilon for ellipsoidal robust MVO
+        theta = np.sqrt((1/T) * np.multiply(np.diag(Q), np.eye(n)))
+        epsilon = np.sqrt(chi2.ppf(alpha, n))
+        
+        prob = cp.Problem(cp.Minimize(((1 / 2) * cp.quad_form(x, Q)) + (llambda * A @ x) + (epsilon * cp.norm(theta @ x, p=2))),
+                        [Aeq @ x == beq,
+                        x >= lb])
+    # Change verbose to True to output optimization
+    # info to console
+
+    prob.solve(verbose=False, solver=cp.ECOS)
+    return x.value
+  
+def MVO_card(mu, Q, L=0.03, U=1, K=10):
+
+    #Lower bound for buy-in threshold
+    #Upper bound for buy-in threshold
+    #K - # of stocks
 
     # Find the total number of assets
     n = len(mu)
@@ -38,16 +98,55 @@ def MVO(mu, Q):
 
     # Define and solve using CVXPY
     x = cp.Variable(n)
+    y = cp.Variable(n, boolean = True)
     prob = cp.Problem(cp.Minimize((1 / 2) * cp.quad_form(x, Q)),
                       [A @ x <= b,
                        Aeq @ x == beq,
-                       x >= lb])
+                       x >= lb,
+                       (cp.sum(y) <= K),
+                       (x >= L*y), 
+                       (x <= U*y)])
     # change verbose to True to output optimization
     # info to console
 
-    prob.solve(verbose=False, solver=cp.ECOS)
+    prob.solve(solver=cp.GUROBI)
     return x.value
 
+def market_cap(r_mkt, R):
+    '''
+    Returns estimated market portfolio weights.
+
+    Inputs:
+        r_mkt (np.ndarray): T x 1 vector of market returns
+        R (np.ndarray): T x n matrix of asset returns
+    
+    Returns:
+        x (np.ndarray): n x 1 vector of estimated asset weights for the market portfolio
+    '''
+    T, n = R.shape
+
+    # Define and solve using CVXPY
+    x = cp.Variable(n)
+
+    # Constrain weights to sum to 1
+    Aeq = np.ones([1, n])
+    beq = 1
+
+    # Disallow short sales
+    lb = np.zeros(n)
+
+    # Define objective function
+    error = cp.norm(r_mkt - (R @ x), p=2)
+    objective = cp.Minimize(error)
+
+    # Define constraints
+    constraints = [Aeq @ x == beq,
+                   x >= lb]
+    
+    prob = cp.Problem(objective, constraints)
+    prob.solve(verbose=False, solver=cp.ECOS)
+
+    return x.value
 
 #edit so you can construct MVO 
 def Sharpe_MVO(mu, Q):
@@ -150,6 +249,3 @@ def Max_Sharpe_Min_Turn_2(mu, Q, x0, llambda = 0.5):
     x = y.value/k.value
 
     return x
-    
-
-
