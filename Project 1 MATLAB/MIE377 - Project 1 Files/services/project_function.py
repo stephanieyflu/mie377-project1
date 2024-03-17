@@ -1,128 +1,121 @@
 from services.strategies import *
 import os
 import pandas as pd
+import numpy as np
+from scipy.stats.mstats import gmean
 
-def project_function(periodReturns, periodFactRet, x0, alpha, llambda):
+def project_function(periodReturns, periodFactRet, x0):
     """
     Please feel free to modify this function as desired
     :param periodReturns:
     :param periodFactRet:
     :return: the allocation as a vector
     """
-    Strategy1 = OLS_MVO_robust() # Vary parameters
-    x1 = Strategy1.execute_strategy(periodReturns, periodFactRet, alpha=alpha, llambda=llambda)
+    print('periodReturns:', periodReturns.shape)
+    print('x0:', len(x0))
+    # print(periodFactRet.columns)
 
-    Strategy2 = PCA_MVO() # Vary parameters
-    x2 = Strategy2.execute_strategy(periodReturns, periodFactRet, p=4)
+    # Initialize all strategies
+    x_equal = equal_weight(periodReturns)
 
-    return x1
+    Strategy1 = HistoricalMeanVarianceOptimization()
+    x_hist_mvo = Strategy1.execute_strategy(periodReturns, periodFactRet)
 
-# def project_function(periodReturns, periodFactRet, x0):
-#     """
-#     Please feel free to modify this function as desired
-#     :param periodReturns:
-#     :param periodFactRet:
-#     :return: the allocation as a vector
-#     """
-#     print('periodReturns:', periodReturns.shape)
-#     print('x0:', len(x0))
-#     print(periodFactRet.columns)
+    Strategy2 = OLS_MVO()
+    x_ols_mvo = Strategy2.execute_strategy(periodReturns, periodFactRet)
 
-#     # Initialize all strategies
-#     x_equal = equal_weight(periodReturns)
+    Strategy3 = OLS_MVO_robust() # Vary parameters
+    x_ols_mvo_robust = Strategy3.execute_strategy(periodReturns, periodFactRet, alpha=0.95, llambda=2)
 
-#     Strategy1 = HistoricalMeanVarianceOptimization()
-#     x_hist_mvo = Strategy1.execute_strategy(periodReturns, periodFactRet)
+    Strategy4 = PCA_MVO() # Vary parameters
+    x_pca_mvo = Strategy4.execute_strategy(periodReturns, periodFactRet, p=7)
 
-#     Strategy2 = OLS_MVO()
-#     x_ols_mvo = Strategy2.execute_strategy(periodReturns, periodFactRet)
+    Strategy5 = MARKET_CAP()
+    x_market_cap = Strategy5.execute_strategy(periodReturns, periodFactRet)
 
-#     Strategy3 = OLS_MVO_robust() # Vary parameters
-#     x_ols_mvo_robust = Strategy3.execute_strategy(periodReturns, periodFactRet, alpha=0.95, llambda=2)
+    no_strat = 6
 
-#     Strategy4 = PCA_MVO() # Vary parameters
-#     x_pca_mvo = Strategy4.execute_strategy(periodReturns, periodFactRet, p=7)
+    # Create DataFrame of all strategies
+    strategies = pd.DataFrame([x_equal, 
+                               x_hist_mvo, 
+                               x_ols_mvo, 
+                               x_ols_mvo_robust, 
+                               x_pca_mvo, 
+                               x_market_cap], 
+                               columns=periodReturns.columns.values.tolist(),
+                               index=['Equal Weight', 'Historical MVO', 
+                                      'OLS MVO', 'OLS MVO Robust', 
+                                      'PCA MVO', 'Market Cap Weights'])
+    strategies['Sharpe Ratio'] = np.nan
+    strategies['Turnover Rate'] = np.nan
+    strategies['Score'] = np.nan
 
-#     Strategy5 = MARKET_CAP()
-#     x_market_cap = Strategy5.execute_strategy(periodReturns, periodFactRet)
+        # Check if the file exists - if not, we are in the calibration stage
+    if not os.path.exists('portfolios_aes.csv'):
+        # If the file does not exist, create it from the DataFrame
+        strategies.to_csv('portfolios_aes.csv', index=False)
+        print(f"File '{'portfolios_aes.csv'}' created.")
 
-#     no_strat = 6
+        penalties = pd.DataFrame(np.zeros(no_strat), columns=['Penalty'], 
+                                 index=['Equal Weight', 'Historical MVO', 
+                                      'OLS MVO', 'OLS MVO Robust', 
+                                      'PCA MVO', 'Market Cap Weights'])
+        penalties.to_csv('penalty_counter_aes.csv')
 
-#     # Create DataFrame of all strategies
-#     strategies = pd.DataFrame([x_equal, 
-#                                x_hist_mvo, 
-#                                x_ols_mvo, 
-#                                x_ols_mvo_robust, 
-#                                x_pca_mvo, 
-#                                x_market_cap], 
-#                                columns=periodReturns.columns.values.tolist(),
-#                                index=['Equal Weight', 'Historical MVO', 
-#                                       'OLS MVO', 'OLS MVO Robust', 
-#                                       'PCA MVO', 'Market Cap Weights'])
-
-#     # Calculate performance metrics
-#     performance_metrics = strategies.iloc[-no_strat:, :].apply(lambda x: calculate_performance_metrics(x, periodReturns, periodFactRet, x0), axis=1)
-
-#     # Add column to .csv file with Sharpe ratio and turnover
-
-#     # Select the strategy that has the best Sharpe ratio and average turnover
-
-#     # Scores for Sharpe
-#     scores = []
-#     for group_idx, group_sharpe_ratios in strategies.groupby(strategies.index)['Sharpe Ratio']:
-#         rank = group_sharpe_ratios.rank(method='dense', ascending=True) # higher score is better
-#         score_mapping = {r: (no_strat+1) - r for r in rank}
-#         scores.extend(rank.map(score_mapping))
-
-#     df_sharpe = pd.DataFrame({'Sharpe Scores': scores}, index=strategies.index)
-#     df_with_sharpe = pd.concat([strategies, df_sharpe], axis=1)
-
-#     # Scores for turnover
-#     scores = []
-#     for group_idx, group_turnover in strategies.groupby(strategies.index)['Turnover']:
-#         rank = group_turnover.rank(method='dense', ascending=False) # lower score is better
-#         score_mapping = {r: (no_strat+1) - r for r in rank}
-#         scores.extend(rank.map(score_mapping))
-
-#     df_turnover = pd.DataFrame({'Turnover Scores': scores}, index=strategies.index)
-#     df_with_sharpe_turnover = pd.concat([df_with_sharpe, df_turnover], axis=1)
-
-#     # Add overall score
-#     df_score = None
+        return x_equal
     
-#     # Check if the file exists
-#     if not os.path.exists('portfolios.csv'):
-#         # If the file does not exist, create it from the DataFrame
-#         strategies.to_csv('portfolios.csv')
-#         print(f"File '{'portfolios.csv'}' created.")
-#     else:
-#         # If the file exists, append the DataFrame to it
-#         strategies.to_csv('portfolios.csv', mode='a', header=False)
-#         print(f"Data appended to '{'portfolios.csv'}'.")    
+    else:
+        # If the file exists, append the DataFrame to it
+        strategies.to_csv('portfolios_aes.csv', mode='a', header=False, index=False)
+        print(f"Data appended to '{'portfolios_aes.csv'}'.")
 
-#     return x_equal
-
-# def calculate_performance_metrics(strategy_weights, periodReturns, periodFactRet, x0):
-#     # Calculate performance metrics
-#     sharpe_ratio = calculate_sharpe_ratio(strategy_weights, periodReturns, periodFactRet, x0)
-#     turnover_rate = calculate_turnover_rate(strategy_weights, x0)
+        strategies = pd.read_csv('portfolios_aes.csv')
+        penalties = pd.read_csv('penalty_counter_aes.csv')
     
-#     # Return a tuple of performance metrics
-#     return sharpe_ratio, turnover_rate
+        # Calculate performance metrics
+        sharpe_ratios = strategies.iloc[-no_strat*2:-no_strat, :-4].apply(lambda x: calculate_sharpe_ratio(x.values, periodReturns), axis=1)
+        turnover_rates = strategies.iloc[-no_strat:, :-4].apply(lambda x: calculate_turnover_rate(x.values, x0), axis=1)
+        scores = 0.8 * sharpe_ratios.values - 0.2 * turnover_rates.values
 
-# # Define functions to calculate Sharpe ratio and turnover rate
-# def calculate_sharpe_ratio(weights, returns, factors, x0):
-    
-#     return sharpe_ratio
+        strategies.iloc[-6:, strategies.columns.get_loc('Sharpe Ratio')] = sharpe_ratios.values
+        strategies.iloc[-6:, strategies.columns.get_loc('Turnover Rate')] = turnover_rates.values
+        strategies.iloc[-6:, strategies.columns.get_loc('Score')] = scores
 
-# def calculate_turnover_rate(x, x0):
-#     '''
-#     Inputs:
-#         x (np.ndarray): weights of current strategy being evaluated
-#         x0 (np.ndarray): weights of previous selected strategy
+        # Calculate penalties
+        # If the strategy we selected last did not perform in the top half, add a penalty score to it
+
+        strategies.to_csv('portfolios_aes.csv', mode='w', index=False)
+        print(f"Data with scores updated to '{'portfolios_aes.csv'}'.")
+
+        return x_equal
+
+# Define functions to calculate per period Sharpe ratio and turnover rate
+def calculate_sharpe_ratio(weights, periodReturns, NumObs=36):
+    '''
+    Inputs:
+        weights (np.ndarray): weights of current strategy being evaluated
+        returns (np.ndarray): asset returns for the current period being evaluated
     
-#     Returns:
-#         turnover_rate (int)
-#     '''
-#     turnover_rate = np.mean(np.abs(x - x0)) 
-#     return turnover_rate
+    Returns:
+        sharpe_ratio (int)
+    '''
+    returns = periodReturns.iloc[(-1) * NumObs:, :]
+
+    portfRets = pd.DataFrame(returns @ weights)
+
+    sharpe_ratio = ((portfRets + 1).apply(gmean, axis=0) - 1)/portfRets.std()
+
+    return sharpe_ratio.values[0]
+
+def calculate_turnover_rate(x, x0):
+    '''
+    Inputs:
+        x (np.ndarray): weights of current strategy being evaluated
+        x0 (np.ndarray): weights of previous selected strategy
+    
+    Returns:
+        turnover_rate (int)
+    '''
+    turnover_rate = np.mean(np.abs(x - x0)) 
+
+    return turnover_rate
