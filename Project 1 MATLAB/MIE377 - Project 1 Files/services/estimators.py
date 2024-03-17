@@ -44,9 +44,15 @@ def OLS(returns, factRet):
 
 def Lasso(returns, factRet, S=0.001):
 
-    #S = sum of regression coefficients
-    #lamb = 0.01
-    #S = 0.0001
+    '''
+    Lasso Regression with all 8 factors
+
+    Inputs:
+    S = sum of regression coefficients limit
+
+    Returns:
+    Estimated expected mean and covariance matrix 
+    '''
 
     # Number of observations and factors
     [T, p] = factRet.shape #T x p (36,8)

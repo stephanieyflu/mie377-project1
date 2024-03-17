@@ -75,6 +75,18 @@ def MVO(mu, Q, robust=False, T=None, alpha=None, llambda=None):
   
 def MVO_card(mu, Q, L=0.03, U=1, K=10):
 
+    '''
+    Returns estimated market portfolio weights.
+
+    Inputs:
+        L: lower bound of buy-in threshold (number) 
+        U: upper bound of buy-in threshold (number)
+        K: limit of # of assets you want in porftolio (number)
+    
+    Returns:
+        x (np.ndarray): n x 1 vector of estimated asset weights for the market portfolio
+    '''
+
     #Lower bound for buy-in threshold
     #Upper bound for buy-in threshold
     #K - # of stocks

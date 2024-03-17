@@ -69,9 +69,12 @@ class OLS_MVO:
         mu, Q = OLS(returns, factRet)
         x = MVO(mu, Q)
         return x
+    
 class OLS_CAPM:
     """
-    uses historical returns to estimate the covariance matrix and expected return
+    CAPM factor model, which
+    uses excess return of market portfolio ('Mkt_RF') factor to estimate the 
+    covariance and expected return
     """
 
     def __init__(self, NumObs=36):
@@ -95,7 +98,9 @@ class OLS_CAPM:
     
 class OLS_FF:
     """
-    uses historical returns to estimate the covariance matrix and expected return
+    Fama-French 3 Factor model, which
+    uses 'Mkt_RF', 'SMB', 'HML' factors to estimate the 
+    covariance and expected return    
     """
 
     def __init__(self, NumObs=36):
@@ -119,7 +124,9 @@ class OLS_FF:
     
 class OLS_FF5:
     """
-    uses historical returns to estimate the covariance matrix and expected return
+    Fama-French 5 Factor model, which
+    uses 'Mkt_RF', 'SMB', 'HML', 'RMW', 'CMA' factors to estimate the 
+    covariance and expected return     
     """
 
     def __init__(self, NumObs=36):
@@ -141,9 +148,36 @@ class OLS_FF5:
         x = MVO(mu, Q)
         return x
     
+class OLS_Carhart:
+    """
+    Carhart 4 factor model, which
+    uses 'Mkt_RF', 'SMB', 'HML', 'Mom' factors to estimate the 
+    covariance and expected return 
+    """
+
+    def __init__(self, NumObs=36):
+        self.NumObs = NumObs  # number of observations to use
+
+    def execute_strategy(self, periodReturns, factorReturns):
+        """
+        executes the portfolio allocation strategy based on the parameters in the __init__
+
+        :param factorReturns:
+        :param periodReturns:
+        :return:x
+        """
+        T, n = periodReturns.shape
+        # get the last T observations
+        returns = periodReturns.iloc[(-1) * self.NumObs:, :]
+        factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
+        mu, Q = OLS(returns, factRet[["Mkt_RF", "SMB", "HML", "Mom   "]])
+        x = MVO(mu, Q)
+        return x
+    
 class Lasso_MVO:
     """
-    uses historical returns to estimate the covariance matrix and expected return
+    uses Lasso Regression to estimate the covariance matrix and expected return
+    and regular MVO
     """
 
     def __init__(self, NumObs=36):
@@ -168,7 +202,8 @@ class Lasso_MVO:
     
 class MVO_CC:
     """
-    uses historical returns to estimate the covariance matrix and expected return
+    uses all 8 factors to estimate the covariance matrix and expected return
+    and MVO with buy-in threshold constraints and # of assets limit
     """
 
     def __init__(self, NumObs=36):
