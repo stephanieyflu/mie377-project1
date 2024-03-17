@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import numpy as np
 from scipy.stats.mstats import gmean
+from sklearn.preprocessing import MinMaxScaler
 
 # def project_function(periodReturns, periodFactRet, x0, alpha, llambda):
 #     """
@@ -97,7 +98,14 @@ def project_function(periodReturns, periodFactRet, x0):
         # Calculate performance metrics
         sharpe_ratios = strategies.iloc[-no_strat*2:-no_strat, :-4].apply(lambda x: calculate_sharpe_ratio(x.values, periodReturns), axis=1)
         turnover_rates = strategies.iloc[-no_strat:, :-4].apply(lambda x: calculate_turnover_rate(x.values, x0), axis=1)
-        scores = 0.8 * sharpe_ratios.values - 0.2 * turnover_rates.values
+        
+        # Create a MinMaxScaler instance
+        scaler = MinMaxScaler()
+        # Fit and transform the sharpe ratios and turnover rates
+        sharpe_normalized = scaler.fit_transform(sharpe_ratios.values.reshape(-1, 1))
+        turnover_normalized = scaler.fit_transform(turnover_rates.values.reshape(-1, 1))
+        
+        scores = 0.8 * sharpe_normalized - 0.2 * turnover_normalized
 
         # Subtract from the score the penalty
         for i in range(len(scores)):
@@ -154,6 +162,6 @@ def calculate_turnover_rate(x, x0):
     Returns:
         turnover_rate (int)
     '''
-    turnover_rate = np.mean(np.abs(x - x0)) 
+    turnover_rate = np.sum(np.abs(x - x0)) 
 
     return turnover_rate
