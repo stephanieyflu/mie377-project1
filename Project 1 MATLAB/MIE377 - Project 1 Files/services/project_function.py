@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from scipy.stats.mstats import gmean
 
-# def project_function(periodReturns, periodFactRet, x0, p):
+# def project_function(periodReturns, periodFactRet, x0, alpha, llambda):
 #     """
 #     Please feel free to modify this function as desired
 #     :param periodReturns:
@@ -12,12 +12,12 @@ from scipy.stats.mstats import gmean
 #     :return: the allocation as a vector
 #     """
 #     Strategy3 = OLS_MVO_robust() # Vary parameters
-#     x3 = Strategy3.execute_strategy(periodReturns, periodFactRet, alpha=0.95, llambda=1)
+#     x3 = Strategy3.execute_strategy(periodReturns, periodFactRet, alpha, llambda)
 
 #     Strategy4 = PCA_MVO() # Vary parameters
-#     x4 = Strategy4.execute_strategy(periodReturns, periodFactRet, p)
+#     x4 = Strategy4.execute_strategy(periodReturns, periodFactRet, p=4)
 
-#     return x4
+#     return x3
 
 def project_function(periodReturns, periodFactRet, x0):
     """
@@ -82,7 +82,7 @@ def project_function(periodReturns, periodFactRet, x0):
         penalties = pd.DataFrame(np.zeros(no_strat), columns=['Penalty'])
         penalties.to_csv('penalty_counter_aes.csv', index=False)
 
-        selected = 0 # strategy 0
+        selected = 0 # strategy 0 - find a better way to use the calibration period to select an initial model?
         strategies.at[selected-6, 'Selected'] = 1
 
         return strategy_weights[selected]
@@ -120,9 +120,6 @@ def project_function(periodReturns, periodFactRet, x0):
 
         if prev_selected not in top_half_indices:
             penalties.at[prev_selected, 'Penalty'] += 1
-
-        # Calculate penalties
-        # If the strategy we selected last did not perform in the top half, add a penalty score to it
 
         strategies.to_csv('portfolios_aes.csv', mode='w', index=False)
         print(f"Data with scores updated to '{'portfolios_aes.csv'}'.")

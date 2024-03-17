@@ -133,7 +133,7 @@ def PCA(returns, p=3):
 
     # Choose top p PCs
     P1 = P[:, :p]
-    factRet = pd.DataFrame(P1)
+    factRet = pd.DataFrame(np.real(P1))
 
     ### OLS ###
 
