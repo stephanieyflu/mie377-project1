@@ -1,0 +1,19 @@
+CAPM
+Elasped time is 0.35719799995422363 seconds 
+Sharpe ratio: 0.544718628601329 
+Avg. turnover: 0.18046106939183945
+
+FF3
+Elasped time is 0.2908968925476074 seconds
+Sharpe ratio:  0.5593648247295051
+Avg. turnover:  0.2472039736867758
+
+FF5
+Elasped time is 0.36774301528930664 seconds
+Sharpe ratio:  0.5705910372564196
+Avg. turnover:  0.26278563577625913
+
+Carhart
+Elasped time is 0.28772807121276855 seconds
+Sharpe ratio:  0.5579792476313181
+Avg. turnover:  0.254163295778456
