@@ -31,6 +31,8 @@ def project_function(periodReturns, periodFactRet, x0):
     # print('x0:', len(x0))
     # print(periodFactRet.columns)
 
+    # if x0 == 0, then we know that we're at the beginning of a test and we need a new file
+
     names = ['Equal', 'Historical MVO', 'OLS MVO', 'Robust', 'PCA', 'Market Cap']
 
     # Initialize all strategies
@@ -74,7 +76,7 @@ def project_function(periodReturns, periodFactRet, x0):
     strategies['Score'] = np.nan
     strategies['Selected'] = 0
 
-        # Check if the file exists - if not, we are in the calibration stage
+    # Check if the file exists - if not, we are in the calibration stage
     if not os.path.exists('portfolios_aes.csv'):
         selected = 0 # strategy 0 - find a better way to use the calibration period to select an initial model?
         strategies.at[strategies.index[selected-6], 'Selected'] = 1
@@ -109,7 +111,7 @@ def project_function(periodReturns, periodFactRet, x0):
 
         # Subtract from the score the penalty
         for i in range(len(scores)):
-            scores[i] -= penalties['Penalty'].values[i] * 0.05
+            scores[i] -= penalties['Penalty'].values[i] * 0.1
 
         strategies.iloc[-6:, strategies.columns.get_loc('Sharpe Ratio')] = sharpe_ratios.values
         strategies.iloc[-6:, strategies.columns.get_loc('Turnover Rate')] = turnover_rates.values
@@ -134,7 +136,7 @@ def project_function(periodReturns, periodFactRet, x0):
         penalties.to_csv('penalty_counter_aes.csv', mode='w', index=False)
         print(f"Penalties updated.")
 
-    print("########### {} Selected ###########".format(names[selected]))
+    print("########### {} Selected ###########\n".format(names[selected]))
     return strategy_weights[selected]
 
 # Define functions to calculate per period Sharpe ratio and turnover rate
