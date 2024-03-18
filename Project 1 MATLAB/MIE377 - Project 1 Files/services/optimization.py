@@ -214,14 +214,13 @@ def Max_Sharpe_Min_Turn_1(mu, Q, x0, llambda=2):
     prob = cp.Problem(cp.Minimize(cp.quad_form(y, Q)+(llambda*cp.sum(z))), 
                       [np.transpose(mu)@y == 1,
                        np.transpose(np.ones(n))@y == k,
-                       z >= y - (k*x0),
-                       z >= (k*x0) -y,
+                       z >= (y-(k*x0)),
+                       z >= ((k*x0) - y),
                        k >= 0,
                        y >= 0])
     
     prob.solve(verbose=True, solver=cp.ECOS)
     x = y.value/k.value
-
     return x
 
 def Max_Sharpe_Min_Turn_2(mu, Q, x0, llambda = 0.5):

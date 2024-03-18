@@ -15,11 +15,14 @@ def project_function(periodReturns, periodFactRet, x0):
     print(periodFactRet.columns)
 
     # Initialize all strategies
-    x_equal = equal_weight(periodReturns)
+    #x = equal_weight(periodReturns)
 
-    Strategy1 = HistoricalMeanVarianceOptimization()
-    x_hist_mvo = Strategy1.execute_strategy(periodReturns, periodFactRet)
+    Strategy = Strat_Max_Sharpe_Min_Turn_1()
+    x = Strategy.execute_strategy(periodReturns, periodFactRet, x0, llambda=0.05)
+    return x
 
+
+'''
     Strategy2 = OLS_MVO()
     x_ols_mvo = Strategy2.execute_strategy(periodReturns, periodFactRet)
 
@@ -100,13 +103,14 @@ def calculate_sharpe_ratio(weights, returns, factors, x0):
     return sharpe_ratio
 
 def calculate_turnover_rate(x, x0):
-    '''
+    
     Inputs:
         x (np.ndarray): weights of current strategy being evaluated
         x0 (np.ndarray): weights of previous selected strategy
     
     Returns:
         turnover_rate (int)
-    '''
+    
     turnover_rate = np.mean(np.abs(x - x0)) 
     return turnover_rate
+'''
