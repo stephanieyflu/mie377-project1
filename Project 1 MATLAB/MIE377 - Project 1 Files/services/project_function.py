@@ -2,8 +2,6 @@ from services.strategies import *
 import os
 import pandas as pd
 import numpy as np
-from scipy.stats.mstats import gmean
-from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -31,14 +29,14 @@ def project_function(periodReturns, periodFactRet, x0):
 
         params = pd.DataFrame({'p': [p_best], 'K': [K_best], 'no': [no_best]})
 
-        print(params)
+        # print(params)
 
         if os.path.exists('params_aes.csv'):
             os.remove('params_aes.csv')
-            print("params_aes.csv deleted")
+            # print("params_aes.csv deleted")
         
         params.to_csv('params_aes.csv', index=False)
-        print("best params saved in params_aes.csv")
+        # print("best params saved in params_aes.csv")
 
         params = pd.read_csv('params_aes.csv')
         p_best = params.iloc[0, 0]
@@ -56,8 +54,7 @@ def project_function(periodReturns, periodFactRet, x0):
         x = Strategy.execute_strategy(periodReturns, NumObs=no_best, p=p_best, card=True, L=0.05, U=0.2, K=K_best)
     
         turnover = np.sum(np.abs(x-x0))
-        if turnover > 1: # justify this value!!
-            print('large turnover')
+        if turnover > 1: 
             x = x0
 
     return x
@@ -68,7 +65,7 @@ def find_params(ps, Ks, Strategy, periodReturns, T):
     all_p = []
     all_K = []
 
-    for w in [24, 36, 48]: # this takes way too long for more stocks - try just 36 and 48 or just 48?
+    for w in [24, 36, 48]:
         for p in ps:
             for K in Ks:
 
@@ -88,8 +85,6 @@ def find_params(ps, Ks, Strategy, periodReturns, T):
                     subperiodReturns = periodReturns.iloc[start_index:end_index]
 
                     if t > 0:
-                        # print(t)
-                        # print(end_index)
                         portfReturns.iloc[end_index-rebalancingFreq:end_index, portfReturns.columns.get_loc('Returns')] = subperiodReturns[-rebalancingFreq:].dot(weights)
 
                     weights = Strategy.execute_strategy(subperiodReturns, NumObs=w, p=p, card=True, L=0.05, U=0.2, K=K)
@@ -101,32 +96,16 @@ def find_params(ps, Ks, Strategy, periodReturns, T):
                 all_K.append(K)
 
     df = pd.DataFrame({'Window Size': win_size, 'p': all_p, 'K': all_K, 'SR': SRs})
-
-    plot(df, all_p)
+    # plot(df, all_p)
 
     ##### Save the optimal parameters #####
 
-    # # *** Method 1 *** #
-    # max_index = df['SR'].idxmax()
-    # best_p = df.at[max_index, 'p']
-    # best_K = df.at[max_index, 'K']
-    # best_no = df.at[max_index, 'Window Size']
-
-    # *** Method 2 *** # - best results so far when we have avg over 24/36 to 48 (just over 48 is not bad though)
     df_avg = df.groupby(['p', 'K'])['SR'].mean().reset_index()
-    df_avg.to_csv('aaa.csv')
+    # df_avg.to_csv('aaa.csv')
     max_index = df_avg['SR'].idxmax()
     best_p = df_avg.at[max_index, 'p']
     best_K = df_avg.at[max_index, 'K']
-    # best_no = df.at[max_index, 'Window Size']
     best_no = 48
-    
-    # # *** Method 3 *** #
-    # df_avg = df.groupby(['p', 'K'])['SR'].mean().reset_index()
-    # df_avg.to_csv('aaa.csv')
-    # best_p = df_avg.at[len(Ks)-1, 'p']
-    # best_K = 10
-    # best_no = 48
 
     return best_p, best_K, best_no
 
