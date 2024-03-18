@@ -2,7 +2,7 @@ import cvxpy as cp
 import numpy as np
 from scipy.stats import chi2
 
-def MVO(mu, Q, robust=False, T=None, alpha=None, llambda=None):
+def MVO(mu, Q, robust=False, T=None, alpha=None, llambda=None, card=False, L=0.3, U=1, K=10):
     """
     #----------------------------------------------------------------------
     Use this function to construct an example of a MVO portfolio.
@@ -53,13 +53,13 @@ def MVO(mu, Q, robust=False, T=None, alpha=None, llambda=None):
     # Define and solve using CVXPY
     x = cp.Variable(n)
 
-    if not robust:
+    if not robust and not card:
         prob = cp.Problem(cp.Minimize((1 / 2) * cp.quad_form(x, Q)),
                         [A @ x <= b,
                         Aeq @ x == beq,
                         x >= lb])
         
-    if robust:
+    elif robust and not card:
         # Calculate theta and epsilon for ellipsoidal robust MVO
         theta = np.sqrt((1/T) * np.multiply(np.diag(Q), np.eye(n)))
         epsilon = np.sqrt(chi2.ppf(alpha, n))
@@ -67,52 +67,32 @@ def MVO(mu, Q, robust=False, T=None, alpha=None, llambda=None):
         prob = cp.Problem(cp.Minimize(((1 / 2) * cp.quad_form(x, Q)) + (llambda * A @ x) + (epsilon * cp.norm(theta @ x, p=2))),
                         [Aeq @ x == beq,
                         x >= lb])
-    # Change verbose to True to output optimization
-    # info to console
+    
+    elif not robust and card:
+        y = cp.Variable(n, boolean = True)
+        prob = cp.Problem(cp.Minimize((1 / 2) * cp.quad_form(x, Q)),
+                        [A @ x <= b,
+                        Aeq @ x == beq,
+                        x >= lb,
+                        (cp.sum(y) <= K),
+                        (x >= L*y), 
+                        (x <= U*y)])
+    
+    elif robust and card:
+        y = cp.Variable(n, boolean = True)
+        # Calculate theta and epsilon for ellipsoidal robust MVO
+        theta = np.sqrt((1/T) * np.multiply(np.diag(Q), np.eye(n)))
+        epsilon = np.sqrt(chi2.ppf(alpha, n))
+        
+        prob = cp.Problem(cp.Minimize(((1 / 2) * cp.quad_form(x, Q)) + (llambda * A @ x) + (epsilon * cp.norm(theta @ x, p=2))),
+                        [Aeq @ x == beq,
+                        x >= lb,
+                        (cp.sum(y) <= K),
+                        (x >= L*y), 
+                        (x <= U*y)])
 
-    prob.solve(verbose=False, solver=cp.ECOS)
+    prob.solve(verbose=False, solver=cp.GUROBI)
     return x.value
-
-
-def MVO_card(mu, Q, L=0.03, U=1, K=10):
-
-    #Lower bound for buy-in threshold
-    #Upper bound for buy-in threshold
-    #K - # of stocks
-
-    # Find the total number of assets
-    n = len(mu)
-
-    # Set the target as the average expected return of all assets
-    targetRet = np.mean(mu)
-
-    # Disallow short sales
-    lb = np.zeros(n)
-
-    # Add the expected return constraint
-    A = -1 * mu.T
-    b = -1 * targetRet
-
-    # constrain weights to sum to 1
-    Aeq = np.ones([1, n])
-    beq = 1
-
-    # Define and solve using CVXPY
-    x = cp.Variable(n)
-    y = cp.Variable(n, boolean = True)
-    prob = cp.Problem(cp.Minimize((1 / 2) * cp.quad_form(x, Q)),
-                      [A @ x <= b,
-                       Aeq @ x == beq,
-                       x >= lb,
-                       (cp.sum(y) <= K),
-                       (x >= L*y), 
-                       (x <= U*y)])
-    # change verbose to True to output optimization
-    # info to console
-
-    prob.solve(solver=cp.GUROBI)
-    return x.value
-
 
 def market_cap(r_mkt, R):
     '''
