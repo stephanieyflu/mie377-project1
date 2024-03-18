@@ -197,13 +197,13 @@ def Robust_Sharpe_Eps_MVO(mu, Q, T): #NOT USING
     # change verbose to True to output optimization
     # info to console
 
-    prob.solve(verbose=True, solver=cp.ECOS)
+    prob.solve(verbose=False, solver=cp.ECOS)
     x = y.value/k.value
 
     return x
 
 
-def Max_Sharpe_Min_Turn_1(mu, Q, x0, llambda=2):
+def Max_Sharpe_Min_Turn(mu, Q, x0, llambda=1):
     #towards minimizing turnover
         # Find the total number of assets
     n = len(mu)
@@ -214,8 +214,6 @@ def Max_Sharpe_Min_Turn_1(mu, Q, x0, llambda=2):
     z = cp.Variable(n)
      #scalar big just turn over, and small is sharpe 
     
-    print(x0.shape)
-    print(k)
     prob = cp.Problem(cp.Minimize(cp.quad_form(y, Q)+(llambda*cp.sum(z))), 
                       [np.transpose(mu)@y == 1,
                        np.transpose(np.ones(n))@y == k,
@@ -224,34 +222,7 @@ def Max_Sharpe_Min_Turn_1(mu, Q, x0, llambda=2):
                        k >= 0,
                        y >= 0])
     
-    prob.solve(verbose=True, solver=cp.ECOS)
-    x = y.value/k.value
-
-    return x
-
-
-def Max_Sharpe_Min_Turn_2(mu, Q, x0, llambda = 0.5):
-    #towards maximizing sharpe
-        # Find the total number of assets
-    n = len(mu)
-
-    # Define and solve using CVXPY
-    y = cp.Variable(n)
-    k = cp.Variable()
-    z = cp.Variable(n)
-     #scalar big just turn over, and small is sharpe 
-    
-    print(x0.shape)
-    print(k)
-    prob = cp.Problem(cp.Minimize(cp.quad_form(y, Q)+(llambda*cp.sum(z))), 
-                      [np.transpose(mu)@y == 1,
-                       np.transpose(np.ones(n))@y == k,
-                       z >= y - (k*x0),
-                       z >= (k*x0) -y,
-                       k >= 0,
-                       y >= 0])
-    
-    prob.solve(verbose=True, solver=cp.ECOS)
+    prob.solve(verbose=False, solver=cp.ECOS)
     x = y.value/k.value
 
     return x

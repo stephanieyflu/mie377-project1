@@ -277,27 +277,14 @@ class Max_Sharpe_Robust_Ratio: #NOT USING
        return x
     
 
-class Strat_Max_Sharpe_Min_Turn_1:
+class Strat_Max_Sharpe_Min_Turn:
     def __init__(self, NumObs = 36):
         self.NumObs = NumObs #number of observations to use
     
-    def execute_strategy(self, periodReturns, factorReturns, x0, llambda=2):
+    def execute_strategy(self, periodReturns, factorReturns, x0, llambda=1):
        T, n = periodReturns.shape
        returns = periodReturns.iloc[(-1) * self.NumObs:, :]
        factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
        mu, Q = OLS(returns, factRet)
-       x = Max_Sharpe_Min_Turn_1(mu, Q, x0, llambda)
-       return x
-
-
-class Strat_Max_Sharpe_Min_Turn_2:
-    def __init__(self, NumObs = 36):
-        self.NumObs = NumObs #number of observations to use
-    
-    def execute_strategy(self, periodReturns, factorReturns, x0, llambda = 0.5):
-       T, n = periodReturns.shape
-       returns = periodReturns.iloc[(-1) * self.NumObs:, :]
-       factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
-       mu, Q = OLS(returns, factRet)
-       x = Max_Sharpe_Min_Turn_2(mu, Q, x0, llambda)
+       x = Max_Sharpe_Min_Turn(mu, Q, x0, llambda)
        return x
