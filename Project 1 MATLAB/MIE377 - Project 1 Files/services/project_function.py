@@ -45,7 +45,7 @@ def project_function(periodReturns, periodFactRet, x0):
         K_best = params.iloc[0, 1]
         no_best = params.iloc[0, 2]
 
-        x = Strategy.execute_strategy(periodReturns, NumObs=no_best, p=p_best, card=True, L=0.05, U=0.225, K=K_best)
+        x = Strategy.execute_strategy(periodReturns, NumObs=no_best, p=p_best, card=True, L=0.05, U=0.2, K=K_best)
 
     else: # only care about turnover if we're not during calibration
         params = pd.read_csv('params_aes.csv')
@@ -53,7 +53,7 @@ def project_function(periodReturns, periodFactRet, x0):
         K_best = params.iloc[0, 1]
         no_best = params.iloc[0, 2]
 
-        x = Strategy.execute_strategy(periodReturns, NumObs=no_best, p=p_best, card=True, L=0.05, U=0.225, K=K_best)
+        x = Strategy.execute_strategy(periodReturns, NumObs=no_best, p=p_best, card=True, L=0.05, U=0.2, K=K_best)
     
         turnover = np.sum(np.abs(x-x0))
         if turnover > 1: # justify this value!!
@@ -92,7 +92,7 @@ def find_params(ps, Ks, Strategy, periodReturns, T):
                         # print(end_index)
                         portfReturns.iloc[end_index-rebalancingFreq:end_index, portfReturns.columns.get_loc('Returns')] = subperiodReturns[-rebalancingFreq:].dot(weights)
 
-                    weights = Strategy.execute_strategy(subperiodReturns, NumObs=w, p=p, card=True, L=0.05, U=0.225, K=K)
+                    weights = Strategy.execute_strategy(subperiodReturns, NumObs=w, p=p, card=True, L=0.05, U=0.2, K=K)
                 
                 SR = (portfReturns.iloc[-(T-windowSize):]).mean() / (portfReturns.iloc[-(T-windowSize):]).std()
                 SRs.append(SR[0])
