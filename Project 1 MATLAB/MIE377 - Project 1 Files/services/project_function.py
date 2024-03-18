@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
 def project_function(periodReturns, periodFactRet, x0):
     """
     Please feel free to modify this function as desired

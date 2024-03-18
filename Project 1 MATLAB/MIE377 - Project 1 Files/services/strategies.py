@@ -6,6 +6,57 @@ import pandas as pd
 # this file will produce portfolios as outputs from data - the strategies can be implemented as classes or functions
 # if the strategies have parameters then it probably makes sense to define them as a class
 
+class PCA_MVO:
+    """
+    uses PCA to estimate the covariance matrix and expected return
+    and MVO with cardinality constraints
+    """
+
+    def __init__(self, NumObs=36):
+        self.NumObs = NumObs  # number of observations to use
+
+    def execute_strategy(self, periodReturns, NumObs=36, p=3, robust=False, T=None, alpha=None, llambda=None, card=False, L=0.3, U=1, K=10):
+        """
+        executes the portfolio allocation strategy based on the parameters in the __init__
+
+        :param factorReturns:
+        :param periodReturns:
+        :param p: number of PCs to select as factors
+        :return: x
+        """
+        T, n = periodReturns.shape
+        # get the last T observations
+        returns = periodReturns.iloc[(-1) * NumObs:, :]
+        mu, Q = PCA(returns, p=p)
+        x = MVO(mu, Q, robust=robust, T=T, alpha=alpha, llambda=llambda, card=card, L=L, U=U, K=K)
+        return x
+
+
+class MARKET_CAP:
+    """
+    uses an estimate of the market portfolio weights as the portfolio
+    """
+
+    def __init__(self, NumObs=36):
+        self.NumObs = NumObs  # number of observations to use
+    
+    def execute_strategy(self, periodReturns, factorReturns):
+        """
+        executes the portfolio allocation strategy based on the parameters in the __init__
+
+        :param factorReturns:
+        :param periodReturns:
+        :return: x
+        """
+        T, n = periodReturns.shape
+        # get the last T observations
+        returns = periodReturns.iloc[(-1) * self.NumObs:, :]
+        factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
+        x = market_cap(factRet['Mkt_RF'].values, returns.values)
+
+        return x
+    
+
 def equal_weight(periodReturns):
     """
     computes the equal weight vector as the portfolio
@@ -164,7 +215,7 @@ class MVO_CC:
         returns = periodReturns.iloc[(-1) * self.NumObs:, :]
         factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
         mu, Q = OLS(returns, factRet)
-        x = MVO_card(mu, Q, L, U, K)
+        x = MVO(mu, Q, card=True, L=L, U=U, K=K)
         return x
       
 
@@ -197,57 +248,6 @@ class OLS_MVO_robust:
         factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
         mu, Q = OLS(returns, factRet)
         x = MVO(mu, Q, robust=True, T=T, alpha=alpha, llambda=llambda)
-        return x
-
-
-class PCA_MVO:
-    """
-    uses PCA to estimate the covariance matrix and expected return
-    and MVO with cardinality constraints
-    """
-
-    def __init__(self, NumObs=36):
-        self.NumObs = NumObs  # number of observations to use
-
-    def execute_strategy(self, periodReturns, NumObs=36, p=3, robust=False, T=None, alpha=None, llambda=None, card=False, L=0.3, U=1, K=10):
-        """
-        executes the portfolio allocation strategy based on the parameters in the __init__
-
-        :param factorReturns:
-        :param periodReturns:
-        :param p: number of PCs to select as factors
-        :return: x
-        """
-        T, n = periodReturns.shape
-        # get the last T observations
-        returns = periodReturns.iloc[(-1) * NumObs:, :]
-        mu, Q = PCA(returns, p=p)
-        x = MVO(mu, Q, robust=robust, T=T, alpha=alpha, llambda=llambda, card=card, L=L, U=U, K=K)
-        return x
-
-
-class MARKET_CAP:
-    """
-    uses an estimate of the market portfolio weights as the portfolio
-    """
-
-    def __init__(self, NumObs=36):
-        self.NumObs = NumObs  # number of observations to use
-    
-    def execute_strategy(self, periodReturns, factorReturns):
-        """
-        executes the portfolio allocation strategy based on the parameters in the __init__
-
-        :param factorReturns:
-        :param periodReturns:
-        :return: x
-        """
-        T, n = periodReturns.shape
-        # get the last T observations
-        returns = periodReturns.iloc[(-1) * self.NumObs:, :]
-        factRet = factorReturns.iloc[(-1) * self.NumObs:, :]
-        x = market_cap(factRet['Mkt_RF'].values, returns.values)
-
         return x
 
 
