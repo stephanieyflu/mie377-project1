@@ -21,7 +21,16 @@ class PCA_MVO:
 
         :param factorReturns:
         :param periodReturns:
+        :param NumObs:
         :param p: number of PCs to select as factors
+        :param robust:
+        :param T:
+        :param alpha:
+        :param llambda:
+        :param card:
+        :param L:
+        :param U:
+        :param K:
         :return: x
         """
         T, n = periodReturns.shape
@@ -121,7 +130,8 @@ class OLS_MVO:
 
 class OLS_CAPM:
     """
-    uses historical returns to estimate the covariance matrix and expected return
+    uses the market factor to estimate the covariance matrix and expected return
+    and regular MVO
     """
 
     def __init__(self, NumObs=36):
@@ -133,7 +143,7 @@ class OLS_CAPM:
 
         :param factorReturns:
         :param periodReturns:
-        :return:x
+        :return: x
         """
         T, n = periodReturns.shape
         # get the last T observations
@@ -146,7 +156,8 @@ class OLS_CAPM:
 
 class OLS_FF:
     """
-    uses historical returns to estimate the covariance matrix and expected return
+    uses the Fama-French factors to estimate the covariance matrix and expected return
+    and regular MVO
     """
 
     def __init__(self, NumObs=36):
@@ -158,7 +169,7 @@ class OLS_FF:
 
         :param factorReturns:
         :param periodReturns:
-        :return:x
+        :return: x
         """
         T, n = periodReturns.shape
         # get the last T observations
@@ -171,19 +182,21 @@ class OLS_FF:
 
 class Lasso_MVO:
     """
-    uses historical returns to estimate the covariance matrix and expected return
+    uses LASSO to select factors to use to estimate the covariance matrix and expected return
+    and regular MVO
     """
 
     def __init__(self, NumObs=36):
         self.NumObs = NumObs  # number of observations to use
 
-    def execute_strategy(self, periodReturns, factorReturns, S = 0.001): #change S
+    def execute_strategy(self, periodReturns, factorReturns, S=0.001):
         """
         executes the portfolio allocation strategy based on the parameters in the __init__
 
         :param factorReturns:
         :param periodReturns:
-        :return:x
+        :param S:
+        :return: x
         """
         T, n = periodReturns.shape
         # get the last T observations
@@ -196,7 +209,7 @@ class Lasso_MVO:
     
 class MVO_CC:
     """
-    uses historical returns to estimate the covariance matrix and expected return
+    adds cardinality constraints and buy-in thresholds to regular MVO
     """
 
     def __init__(self, NumObs=36):
@@ -208,7 +221,10 @@ class MVO_CC:
 
         :param factorReturns:
         :param periodReturns:
-        :return:x
+        :param L:
+        :param U:
+        :param K:
+        :return: x
         """
         T, n = periodReturns.shape
         # get the last T observations
@@ -253,7 +269,7 @@ class OLS_MVO_robust:
 
 class Max_Sharpe_Ratio:
     def __init__(self, NumObs = 36):
-        self.NumObs = NumObs #number of observations to use
+        self.NumObs = NumObs # number of observations to use
     
     def execute_strategy(self, periodReturns, factorReturns):
        T, n = periodReturns.shape
@@ -264,9 +280,9 @@ class Max_Sharpe_Ratio:
        return x
     
 
-class Max_Sharpe_Robust_Ratio: #NOT USING
+class Max_Sharpe_Robust_Ratio: # NOT USING
     def __init__(self, NumObs = 36):
-        self.NumObs = NumObs #number of observations to use
+        self.NumObs = NumObs # number of observations to use
     
     def execute_strategy(self, periodReturns, factorReturns):
        T, n = periodReturns.shape
@@ -279,7 +295,7 @@ class Max_Sharpe_Robust_Ratio: #NOT USING
 
 class Strat_Max_Sharpe_Min_Turn:
     def __init__(self, NumObs = 36):
-        self.NumObs = NumObs #number of observations to use
+        self.NumObs = NumObs # number of observations to use
     
     def execute_strategy(self, periodReturns, factorReturns, x0, llambda=1):
        T, n = periodReturns.shape

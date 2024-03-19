@@ -8,23 +8,23 @@ import seaborn as sns
 
 def project_function(periodReturns, periodFactRet, x0):
     """
-    Please feel free to modify this function as desired
     :param periodReturns:
     :param periodFactRet:
-    :return: the allocation as a vector
+    :param x0:
+    :return: x (weight allocation as a vector)
     """
-    Strategy = PCA_MVO()
+    Strategy = PCA_MVO() # Use the OLS_PCA_MVO strategy
 
-    # Check if we are in the calibration period
     T, n = periodReturns.shape
 
+    # Check if we are in the calibration period
     if T == 60: # 12 months * 5 years 
         # We are in the calibration period
 
         ##### Determine the optimal parameters #####
 
-        ps = range(1, 11)
-        Ks = range(15, 21)
+        ps = range(1, 11) # Range of p to test
+        Ks = range(15, 21) # Range of K to test
 
         p_best, K_best, no_best = find_params(ps, Ks, Strategy, periodReturns, T)
 
@@ -46,8 +46,8 @@ def project_function(periodReturns, periodFactRet, x0):
 
         x = Strategy.execute_strategy(periodReturns, NumObs=no_best, p=p_best, card=True, L=0.05, U=0.2, K=K_best)
 
-    else: # only care about turnover if we're not during calibration
-        params = pd.read_csv('params_aes.csv')
+    else: # No longer in the calibration period
+        params = pd.read_csv('params_aes.csv') # Read the best parameters
         p_best = params.iloc[0, 0]
         K_best = params.iloc[0, 1]
         no_best = params.iloc[0, 2]
@@ -55,12 +55,25 @@ def project_function(periodReturns, periodFactRet, x0):
         x = Strategy.execute_strategy(periodReturns, NumObs=no_best, p=p_best, card=True, L=0.05, U=0.2, K=K_best)
     
         turnover = np.sum(np.abs(x-x0))
-        if turnover > 1: 
+        if turnover > 1: # If turnover is high, use previous weights
             x = x0
 
     return x
 
 def find_params(ps, Ks, Strategy, periodReturns, T):
+    """_summary_
+
+    Args:
+        ps (np.ndarray): range of p to test
+        Ks (np.ndarray): range of K to test
+        Strategy (Class): strategy used to calculate portfolio weights
+        periodReturns (pd.DataFrame): asset returns during the calibration period
+        T (int): _description_
+
+    Returns:
+        (best_p, best_K, best_no): best p, K, and NumObs parameters based on 
+                                    Sharpe ratio during the calibration period
+    """
     SRs = []
     win_size = []
     all_p = []
@@ -74,22 +87,24 @@ def find_params(ps, Ks, Strategy, periodReturns, T):
                 portfReturns = pd.DataFrame({'Returns': np.zeros(T)}, index=periodReturns.index)
 
                 rebalancingFreq = 6
-                windowSize = w
+                windowSize = w # NumObs
 
                 numPeriods = (T - windowSize) // rebalancingFreq
 
                 for t in range(numPeriods+1):
-                    # Subset the returns and factor returns corresponding to the current calibration period.
+                    # Subset the returns and factor returns corresponding to the current calibration period
                     start_index = t * rebalancingFreq
                     end_index = t * rebalancingFreq + windowSize
                     
                     subperiodReturns = periodReturns.iloc[start_index:end_index]
 
                     if t > 0:
+                        # Calculate the portfolio period returns
                         portfReturns.iloc[end_index-rebalancingFreq:end_index, portfReturns.columns.get_loc('Returns')] = subperiodReturns[-rebalancingFreq:].dot(weights)
 
                     weights = Strategy.execute_strategy(subperiodReturns, NumObs=w, p=p, card=True, L=0.05, U=0.2, K=K)
                 
+                # Calculate and save the Sharpe ratio for the current combination of parameters
                 SR = (portfReturns.iloc[-(T-windowSize):]).mean() / (portfReturns.iloc[-(T-windowSize):]).std()
                 SRs.append(SR[0])
                 win_size.append(w)
@@ -111,7 +126,11 @@ def find_params(ps, Ks, Strategy, periodReturns, T):
     return best_p, best_K, best_no
 
 def plot(df, all_p):
+    """
+    Plots Sharpe ratio with respect to p, K and NumObs during the calibration period
+    """
     clrs = sns.color_palette('hls', n_colors=10)
+    
     #### PLOT 1 #####
     fig, ax1 = plt.subplots()
     plt.title('Sharpe Ratio with respect to p and K for PCA-OLS-MVO-CC')

@@ -94,6 +94,7 @@ def MVO(mu, Q, robust=False, T=None, alpha=None, llambda=None, card=False, L=0.3
     prob.solve(verbose=False, solver=cp.GUROBI)
     return x.value
 
+
 def market_cap(r_mkt, R):
     '''
     Returns estimated market portfolio weights.
@@ -131,9 +132,7 @@ def market_cap(r_mkt, R):
     return x.value
 
 
-#edit so you can construct MVO 
 def Sharpe_MVO(mu, Q):
-        # Find the total number of assets
     n = len(mu)
 
     # Define and solve using CVXPY
@@ -157,8 +156,7 @@ def Sharpe_MVO(mu, Q):
     return x
 
 
-def Robust_Sharpe_Eps_MVO(mu, Q, T): #NOT USING
-           # Find the total number of assets
+def Robust_Sharpe_Eps_MVO(mu, Q, T): # NOT USING
     n = len(mu)
 
     # Set the target as the average expected return of all assets
@@ -184,15 +182,12 @@ def Robust_Sharpe_Eps_MVO(mu, Q, T): #NOT USING
 
 
 def Max_Sharpe_Min_Turn(mu, Q, x0, llambda=1):
-    #towards minimizing turnover
-        # Find the total number of assets
     n = len(mu)
 
     # Define and solve using CVXPY
     y = cp.Variable(n)
     k = cp.Variable()
     z = cp.Variable(n)
-     #scalar big just turn over, and small is sharpe 
     
     prob = cp.Problem(cp.Minimize(cp.quad_form(y, Q)+(llambda*cp.sum(z))), 
                       [np.transpose(mu)@y == 1,
