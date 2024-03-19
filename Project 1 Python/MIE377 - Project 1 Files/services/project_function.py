@@ -61,14 +61,15 @@ def project_function(periodReturns, periodFactRet, x0):
     return x
 
 def find_params(ps, Ks, Strategy, periodReturns, T):
-    """_summary_
+    """Iterates through ps and Ks to determine the set of parameters that result in the optimal 
+    Sharpe ratio during the calibration period
 
     Args:
         ps (np.ndarray): range of p to test
         Ks (np.ndarray): range of K to test
         Strategy (Class): strategy used to calculate portfolio weights
         periodReturns (pd.DataFrame): asset returns during the calibration period
-        T (int): _description_
+        T (int): number of data points (i.e., observations) in periodReturns
 
     Returns:
         (best_p, best_K, best_no): best p, K, and NumObs parameters based on 
